@@ -12,6 +12,8 @@ gem "minitest", "~> 5.0"
 gem "rubocop", "~> 1.21"
 
 gem 'thor'
+gem 'tty-table'
+gem 'colorize'
 
 # TODO: remove this or gate it to an ENV
 gem 'pry'

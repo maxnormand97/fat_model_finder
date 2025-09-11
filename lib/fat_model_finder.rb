@@ -2,6 +2,8 @@
 
 require "thor"
 require "pry"
+require 'tty-table'
+require 'colorize'
 require_relative "fat_model_finder/version"
 
 module FatModelFinder
@@ -10,7 +12,7 @@ module FatModelFinder
   # TODO: we could make this a builder class?
   class FileData
     attr_accessor :line_count, :file_name, :file_size, :file_extension, :last_modified, :word_count, :char_count,
-    :is_empty
+    :is_empty, :file
 
     def initialize(file:)
       @file = file
@@ -26,25 +28,25 @@ module FatModelFinder
       @char_count = File.read(@file).length
       @is_empty = File.zero?(@file)
     end
-
-    def display_attributes
-      <<~OUTPUT
-        File Name:        #{@file_name}
-        File Size:        #{@file_size} bytes
-        File Extension:   #{@file_extension}
-        Last Modified:    #{@last_modified}
-        Line Count:       #{@line_count}
-        Word Count:       #{@word_count}
-        Character Count:  #{@char_count}
-        Is Empty:         #{@is_empty ? 'Yes' : 'No'}
-      OUTPUT
-    end
   end
 
-  # TODO: we could make a presenter to format the data.
   class FileDataPresenter
-    def initialize(file:)
-      @file = file
+    def self.display(file_data:)
+      table = TTY::Table.new(
+        ['Attribute'.colorize(:light_blue), 'Value'.colorize(:light_blue)], # Headers with color
+        [
+          ['File Name'.colorize(:cyan), file_data.file_name.colorize(:green)],
+          ['File Size'.colorize(:cyan), "#{file_data.file_size} bytes".colorize(:yellow)],
+          ['File Extension'.colorize(:cyan), file_data.file_extension.colorize(:magenta)],
+          ['Last Modified'.colorize(:cyan), file_data.last_modified.to_s.colorize(:light_red)],
+          ['Line Count'.colorize(:cyan), file_data.line_count.to_s.colorize(:green)],
+          ['Word Count'.colorize(:cyan), file_data.word_count.to_s.colorize(:yellow)],
+          ['Character Count'.colorize(:cyan), file_data.char_count.to_s.colorize(:magenta)],
+          ['Is Empty'.colorize(:cyan), (file_data.is_empty ? 'Yes'.colorize(:red) : 'No'.colorize(:green))]
+        ]
+      )
+
+      puts table.render(:ascii)
     end
   end
 
@@ -64,14 +66,14 @@ module FatModelFinder
       # when we do the loop here thats what we will have to extract...
       files = Dir.glob("#{directory}/**/*")
       # TODO: we could store all the file_data to an instance variable so we can later on use it with other commands?
-      all_file_data = []
+      @all_file_data = []
       files.each do |file|
         if File.file?(file) # Ensure it's a file and not a directory TODO: will it be bale to handle directories?
           puts "#{file} - Setting file data"
           file_data = FileData.new(file:)
           file_data.set_attributes
-          all_file_data << file_data
-          puts file_data.display_attributes
+          FileDataPresenter.display(file_data:)
+          @all_file_data << file_data
         else
           puts "#{file} - [Not a file]"
         end
