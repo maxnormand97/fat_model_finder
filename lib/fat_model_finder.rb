@@ -2,69 +2,14 @@
 
 require "thor"
 require "pry"
-require 'tty-table'
 require 'colorize'
 require 'json'
 require_relative "fat_model_finder/version"
+require_relative "fat_model_finder/file_data"
+require_relative "fat_model_finder/file_data_presenter"
 
 module FatModelFinder
   class Error < StandardError; end
-
-  class FileData
-    attr_accessor :line_count, :file_name, :file_size, :file_extension, :last_modified, :word_count, :char_count,
-    :is_empty, :file
-
-    def initialize(file:)
-      @file = file
-    end
-
-    def set_attributes
-      @line_count = File.foreach(@file).count
-      @file_name = File.basename(@file)
-      @file_size = File.size(@file)
-      @file_extension = File.extname(@file)
-      @last_modified = File.mtime(@file)
-      @word_count = File.read(@file).split.size
-      @char_count = File.read(@file).length
-      @is_empty = File.zero?(@file)
-    end
-
-    # Convert the object to a hash for JSON serialization we will use it later when we want to re-query the saved
-    # file data...
-    def to_h
-      {
-        file_name: @file_name,
-        file_size: @file_size,
-        file_extension: @file_extension,
-        last_modified: @last_modified,
-        line_count: @line_count,
-        word_count: @word_count,
-        char_count: @char_count,
-        is_empty: @is_empty
-      }
-    end
-  end
-
-  class FileDataPresenter
-    def self.display(file_data:)
-      # TODO: get rid of TTY because it breaks tests...
-      table = TTY::Table.new(
-        ['Attribute'.colorize(:cyan), 'Value'.colorize(:cyan)],
-        [
-          ['File Name'.colorize(:cyan), file_data.file_name.colorize(:green)],
-          ['File Size'.colorize(:cyan), "#{file_data.file_size} bytes".colorize(:green)],
-          ['File Extension'.colorize(:cyan), file_data.file_extension.colorize(:green)],
-          ['Last Modified'.colorize(:cyan), file_data.last_modified.to_s.colorize(:green)],
-          ['Line Count'.colorize(:cyan), file_data.line_count.to_s.colorize(:green)],
-          ['Word Count'.colorize(:cyan), file_data.word_count.to_s.colorize(:green)],
-          ['Character Count'.colorize(:cyan), file_data.char_count.to_s.colorize(:green)],
-          ['Is Empty'.colorize(:cyan), (file_data.is_empty ? 'Yes'.colorize(:red) : 'No'.colorize(:green))]
-        ]
-      )
-
-      puts table.render(:ascii)
-    end
-  end
 
   # Interface for the program to the CLI
   class CLI < Thor
@@ -102,7 +47,7 @@ module FatModelFinder
           puts "File Details"
           set_file_data = FileData.new(file:)
           set_file_data.set_attributes
-          # FileDataPresenter.display(file_data: set_file_data)
+          FileDataPresenter.display(file_data: set_file_data)
 
           # Add the file's attributes to the data
           all_file_data << set_file_data.to_h
