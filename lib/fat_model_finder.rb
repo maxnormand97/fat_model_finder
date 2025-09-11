@@ -4,12 +4,12 @@ require "thor"
 require "pry"
 require 'tty-table'
 require 'colorize'
+require 'json'
 require_relative "fat_model_finder/version"
 
 module FatModelFinder
   class Error < StandardError; end
 
-  # TODO: we could make this a builder class?
   class FileData
     attr_accessor :line_count, :file_name, :file_size, :file_extension, :last_modified, :word_count, :char_count,
     :is_empty, :file
@@ -28,20 +28,36 @@ module FatModelFinder
       @char_count = File.read(@file).length
       @is_empty = File.zero?(@file)
     end
+
+    # Convert the object to a hash for JSON serialization we will use it later when we want to re-query the saved
+    # file data...
+    def to_h
+      {
+        file_name: @file_name,
+        file_size: @file_size,
+        file_extension: @file_extension,
+        last_modified: @last_modified,
+        line_count: @line_count,
+        word_count: @word_count,
+        char_count: @char_count,
+        is_empty: @is_empty
+      }
+    end
   end
 
   class FileDataPresenter
     def self.display(file_data:)
+      # TODO: get rid of TTY because it breaks tests...
       table = TTY::Table.new(
-        ['Attribute'.colorize(:light_blue), 'Value'.colorize(:light_blue)], # Headers with color
+        ['Attribute'.colorize(:cyan), 'Value'.colorize(:cyan)],
         [
           ['File Name'.colorize(:cyan), file_data.file_name.colorize(:green)],
-          ['File Size'.colorize(:cyan), "#{file_data.file_size} bytes".colorize(:yellow)],
-          ['File Extension'.colorize(:cyan), file_data.file_extension.colorize(:magenta)],
-          ['Last Modified'.colorize(:cyan), file_data.last_modified.to_s.colorize(:light_red)],
+          ['File Size'.colorize(:cyan), "#{file_data.file_size} bytes".colorize(:green)],
+          ['File Extension'.colorize(:cyan), file_data.file_extension.colorize(:green)],
+          ['Last Modified'.colorize(:cyan), file_data.last_modified.to_s.colorize(:green)],
           ['Line Count'.colorize(:cyan), file_data.line_count.to_s.colorize(:green)],
-          ['Word Count'.colorize(:cyan), file_data.word_count.to_s.colorize(:yellow)],
-          ['Character Count'.colorize(:cyan), file_data.char_count.to_s.colorize(:magenta)],
+          ['Word Count'.colorize(:cyan), file_data.word_count.to_s.colorize(:green)],
+          ['Character Count'.colorize(:cyan), file_data.char_count.to_s.colorize(:green)],
           ['Is Empty'.colorize(:cyan), (file_data.is_empty ? 'Yes'.colorize(:red) : 'No'.colorize(:green))]
         ]
       )
@@ -52,7 +68,10 @@ module FatModelFinder
 
   # Interface for the program to the CLI
   class CLI < Thor
-    desc "scan DIRECTORY", "Scan a directory in a Rails app"
+    DATA_FILE = "file_data.json" # File to store data
+
+    # TODO: we need to implement a --help feature that will output all of our descriptions
+    desc "scan DIRECTORY", "Scan a directory in a Rails app and save file data to a JSON file"
     def scan(directory = "app/models")
       puts "Scanning directory: #{directory}"
 
@@ -62,33 +81,51 @@ module FatModelFinder
         return
       end
 
+      # Load existing data from the file, or initialize an empty array file will be overwritten.
+      all_file_data = if File.exist?(DATA_FILE)
+        JSON.parse(File.read(DATA_FILE))
+      else
+        # will this ever get hit?
+        []
+      end
+
       # List all files in the directory
-      # when we do the loop here thats what we will have to extract...
       files = Dir.glob("#{directory}/**/*")
-      # TODO: we could store all the file_data to an instance variable so we can later on use it with other commands?
-      @all_file_data = []
+      all_file_data = []
       files.each do |file|
-        if File.file?(file) # Ensure it's a file and not a directory TODO: will it be bale to handle directories?
-          puts "#{file} - Setting file data"
-          file_data = FileData.new(file:)
-          file_data.set_attributes
-          FileDataPresenter.display(file_data:)
-          @all_file_data << file_data
+        # TODO: we will have to add in some logic so it can traverse directories later
+        next unless File.file?(file) # Skip directories
+
+        # Check if the file is already in the data
+        unless all_file_data.any? { |entry| entry["file"] == file }
+          puts "#{file} - Adding new file"
+          puts "File Details"
+          set_file_data = FileData.new(file:)
+          set_file_data.set_attributes
+          # FileDataPresenter.display(file_data: set_file_data)
+
+          # Add the file's attributes to the data
+          all_file_data << set_file_data.to_h
         else
-          puts "#{file} - [Not a file]"
+          puts "#{file} - [Duplicate, skipping]"
         end
+      end
+
+      # Save updated data to the file
+      File.write(DATA_FILE, JSON.dump(all_file_data))
+      puts "Updated file data saved to #{DATA_FILE}"
+    end
+
+    desc "show_fat_models", "Will output details based on file_data JSON file"
+    def do_stuff
+      if File.exist?(DATA_FILE)
+        all_file_data = JSON.parse(File.read(DATA_FILE))
+        puts "In another method"
+        puts "Stored file data:"
+        puts all_file_data
+      else
+        puts "No data found. Run 'scan' first."
       end
     end
   end
-
-  # Fat model finder
-  # It will scan a rails repo specifically in the /models dir
-  # it will go through each file and count the amount of lines that file has
-    # the output will be ordered highest to lowest
-    # the bigger files will be flagged based on an average of the total line length
-  # it provide a CLI output with links to the files flagged
-  # it will output how many relationships the model has
-  # it will output how many validations the model has
-  # it will look for other code smells
-  # BONUS it will provide some kind of text or html output
 end

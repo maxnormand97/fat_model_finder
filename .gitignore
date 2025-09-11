@@ -7,3 +7,5 @@
 /spec/reports/
 /tmp/
 *.gem
+/app/
+file_data.json
