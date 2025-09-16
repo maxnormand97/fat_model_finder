@@ -9,6 +9,10 @@ module FatModelFinder
       puts "Word Count: #{file_data.word_count.to_s.colorize(:green)}"
       puts "Character Count: #{file_data.char_count.to_s.colorize(:green)}"
       puts "Is Empty: #{file_data.is_empty ? 'Yes'.colorize(:red) : 'No'.colorize(:green)}"
+      puts "Method Count: #{file_data.method_count.to_s.colorize(:green)}"
+      puts "Callback Count: #{file_data.callback_count.to_s.colorize(:green)}"
+      puts "Association Count: #{file_data.association_count.to_s.colorize(:green)}"
+      puts "Validation Count: #{file_data.validation_count.to_s.colorize(:green)}"
     end
   end
 end
