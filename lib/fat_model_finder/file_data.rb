@@ -1,7 +1,16 @@
 module FatModelFinder
   class FileData
+    # TODO: we can have a method that overrides these rules and is configurable by the user later. These can just be
+    # set as the default values...
+    METHOD_THRESHOLD = 10
+    CALLBACK_THRESHOLD = 5
+    VALIDATION_THRESHOLD = 5
+    ASSOCIATION_THRESHOLD = 5
+    LINE_COUNT_THRESHOLD = 300
+
     attr_accessor :line_count, :file_name, :file_size, :file_extension, :last_modified, :word_count, :char_count,
-                  :is_empty, :file, :method_count, :callback_count, :association_count, :validation_count
+                  :is_empty, :file, :method_count, :callback_count, :association_count, :validation_count, :fat,
+                  :fat_model_data
 
     def initialize(file:)
       @file = file
@@ -9,6 +18,8 @@ module FatModelFinder
       @callback_count = nil
       @association_count = nil
       @validation_count = nil
+      @fat = false
+      @fat_model_data = {}
     end
 
     def set_base_attributes
@@ -36,7 +47,9 @@ module FatModelFinder
         method_count: @method_count,
         callback_count: @callback_count,
         association_count: @association_count,
-        validation_count: @validation_count
+        validation_count: @validation_count,
+        fat: @fat,
+        fat_model_data: @fat_model_data
       }
     end
 
@@ -63,8 +76,19 @@ module FatModelFinder
       @validation_count = file_content.scan(/^\s*(validates|validate)\b/).size
     end
 
-    # TODO: find the longest method...
+    def calculate_if_fat_model
+      @fat_model_data = {
+        method_count_high: @method_count.to_i > METHOD_THRESHOLD,
+        callback_count_high: @callback_count.to_i > CALLBACK_THRESHOLD,
+        association_count_high: @association_count.to_i > ASSOCIATION_THRESHOLD,
+        validation_count_high: @validation_count.to_i > VALIDATION_THRESHOLD,
+        line_count_high: @line_count.to_i > LINE_COUNT_THRESHOLD
+      }
 
-    # TODO: calculate what is a fat model and what is not...
+      # A model is considered fat if greater than or eq to 2 of the conditions are true OR the line count is huge
+      @fat = @fat_model_data.values.count(true) >= 2 || @fat_model_data[:line_count_high]
+    end
+
+    # TODO: find the longest method...
   end
 end

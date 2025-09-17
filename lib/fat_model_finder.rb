@@ -8,6 +8,7 @@ require_relative "fat_model_finder/version"
 require_relative "fat_model_finder/file_data"
 require_relative "fat_model_finder/file_data_presenter"
 
+# TODO: gonna need to rubocop this...
 module FatModelFinder
   class Error < StandardError; end
 
@@ -42,7 +43,6 @@ module FatModelFinder
         true
       end
 
-      # TODO: We need some logic to determine weather a model if "Fat" or not...
       def process_file(file, all_file_data)
         return if all_file_data.any? { |entry| entry["file"] == file }
 
@@ -53,6 +53,7 @@ module FatModelFinder
         set_file_data.count_callbacks
         set_file_data.count_associations
         set_file_data.count_validations
+        set_file_data.calculate_if_fat_model
         FileDataPresenter.display(file_data: set_file_data)
         all_file_data << set_file_data.to_h
       end
@@ -81,12 +82,17 @@ module FatModelFinder
       all_file_data = load_file_data
       if all_file_data.empty?
         puts "No data found. Run 'scan' first."
+      end
+
+      fat_models = all_file_data.select { |record| record["fat"] == true }
+
+      if !fat_models.empty?
+        puts "Your Fat Models are..."
+        fat_models.each do |fat_model|
+          FileDataPresenter.present_fat_model(json_data: fat_model)
+        end
       else
-        # TODO: now here we have to output the biggest models...
-        puts "Stored file data:"
-        # Sort the array of hashes by line_count in descending order
-        sorted_files = all_file_data.sort_by { |file| -file["line_count"] }
-        puts sorted_files
+        puts "Nothing to worry about you have no Fat Models!"
       end
     end
   end

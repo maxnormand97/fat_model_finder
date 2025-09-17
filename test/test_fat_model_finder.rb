@@ -13,7 +13,19 @@ class TestFatModelFinder < Minitest::Test
     File.write(@test_file, <<~RUBY)
       class Test
         before_save :do_something
+        before_save :do_something
+        before_save :do_something
+        before_save :do_something
+        before_save :do_something
+        before_save :do_something
+
         validates :name, presence: true
+        validates :name, presence: true
+        validates :name, presence: true
+        validates :name, presence: true
+        validates :name, presence: true
+        validates :name, presence: true
+
         has_many :items
 
         def method_one
@@ -67,7 +79,7 @@ class TestFatModelFinder < Minitest::Test
 
     file_data = JSON.parse(File.read(@output_file))
 
-    assert_equal 1, file_data.first["callback_count"], "Expected callback count to match"
+    assert_equal 6, file_data.first["callback_count"], "Expected callback count to match"
   end
 
   def test_that_json_file_contains_correct_association_count
@@ -85,16 +97,59 @@ class TestFatModelFinder < Minitest::Test
 
     file_data = JSON.parse(File.read(@output_file))
 
-    assert_equal 1, file_data.first["validation_count"], "Expected validation count to match"
+    assert_equal 6, file_data.first["validation_count"], "Expected validation count to match"
+  end
+
+  def test_that_models_can_be_flagged_as_fat
+    cli = FatModelFinder::CLI.new
+    cli.scan(@test_directory)
+
+    file_data = JSON.parse(File.read(@output_file))
+
+    assert_equal true, file_data.first["fat"], "Expected fat to be true"
+  end
+
+  def test_that_fat_model_data_is_set
+    cli = FatModelFinder::CLI.new
+    cli.scan(@test_directory)
+
+    file_data = JSON.parse(File.read(@output_file))
+
+    assert_equal true, file_data.first["fat_model_data"]["callback_count_high"], "Expected callback_count_high"
+    assert_equal true, file_data.first["fat_model_data"]["validation_count_high"], "Expected validation_count_high"
+  end
+
+
+  def test_show_fat_models_displays_fat_model_information
+    cli = FatModelFinder::CLI.new
+    cli.scan(@test_directory)
+
+    File.write(@output_file, JSON.dump([{ "file_name" => "test_file.rb", "fat" => true }]))
+
+    output = capture_io { cli.show_fat_models }.first
+
+    assert_includes output, "Your Fat Models are..."
+    assert_includes output, "test_file.rb"
+  end
+
+  def test_show_fat_models_displays_no_fat_models_message
+    cli = FatModelFinder::CLI.new
+    cli.scan(@test_directory)
+
+    File.write(@output_file, JSON.dump([{ "file_name" => "test_file.rb", "fat" => false }]))
+
+    output = capture_io { cli.show_fat_models }.first
+
+    assert_includes output, "Nothing to worry about you have no Fat Models!"
+  end
+
+  def test_show_fat_models_displays_no_data_message
+    cli = FatModelFinder::CLI.new
+
+    File.write(@output_file, JSON.dump([]))
+
+    output = capture_io { cli.show_fat_models }.first
+
+    assert_includes output, "No data found. Run 'scan' first."
   end
 end
-
-  # It will scan a rails repo specifically in the /models dir
-  # it will go through each file and count the amount of lines that file has
-    # the output will be ordered highest to lowest
-    # the bigger files will be flagged based on an average of the total line length
-  # it provide a CLI output with links to the files flagged
-  # it will output how many relationships the model has
-  # it will output how many validations the model has
-  # it will look for other code smells
-  # BONUS it will provide some kind of text or html output
