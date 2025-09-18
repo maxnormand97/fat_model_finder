@@ -9,15 +9,16 @@ Gem::Specification.new do |spec|
   spec.email = ["maxnormand97@gmail.com"]
 
   spec.summary = "Working on a new app? Want to find Fat Models, use ME"
-  spec.description = "A description"
+  spec.description = "A CLI tool that scans the /app/models dir in a Rails application which will then scan each model
+    file to determine weather it is fat or not based on conditions determined in this Gem."
   spec.homepage = "https://github.com/maxnormand97"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.6.0"
 
-  spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
+  # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  # spec.metadata["source_code_uri"] = ""
+  spec.metadata["source_code_uri"] = "https://github.com/maxnormand97/fat_model_finder"
   # spec.metadata["changelog_uri"] = ""
 
   # Specify which files should be added to the gem when it is released.
@@ -32,8 +33,13 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Uncomment to register a new dependency of your gem
-  # spec.add_dependency "example-gem", "~> 1.0"
+  # Runtime dependencies
+  spec.add_dependency "thor"
+  spec.add_dependency "colorize"
 
-  # For more information and examples about making a new gem, check out our
-  # guide at: https://bundler.io/guides/creating_gem.html
+  # Development dependencies
+  spec.add_development_dependency "rake", "~> 13.0"
+  spec.add_development_dependency "minitest", "~> 5.0"
+  spec.add_development_dependency "rubocop", "~> 1.21"
+  spec.add_development_dependency "pry"
 end
