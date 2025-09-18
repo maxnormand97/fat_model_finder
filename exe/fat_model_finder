@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require "fat_model_finder"
+
+FatModelFinder::CLI.start(ARGV)
