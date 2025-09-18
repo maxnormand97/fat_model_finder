@@ -1,7 +1,9 @@
 PATH
   remote: .
   specs:
-    fat_model_finder (0.1.0)
+    fat_model_finder (0.1.1)
+      colorize
+      thor
 
 GEM
   remote: https://rubygems.org/
@@ -48,6 +50,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-22
+  x86_64-linux
 
 DEPENDENCIES
   colorize
