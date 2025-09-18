@@ -15,5 +15,4 @@ gem 'thor'
 
 gem 'colorize'
 
-# TODO: remove this or gate it to an ENV
-gem 'pry'
+gem 'pry', require: false

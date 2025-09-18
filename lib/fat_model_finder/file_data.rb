@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module FatModelFinder
+  # Class to store attributes of file data, later to be parsed to JSON file for storage
   class FileData
     # TODO: we can have a method that overrides these rules and is configurable by the user later. These can just be
     # set as the default values...
