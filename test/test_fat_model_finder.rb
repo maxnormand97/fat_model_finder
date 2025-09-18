@@ -2,7 +2,9 @@
 
 require "test_helper"
 
+# rubocop:disable Metrics/ClassLength
 class TestFatModelFinder < Minitest::Test
+  # rubocop:disable Metrics/MethodLength
   def setup
     @test_directory = "test_directory"
     @test_file = "#{@test_directory}/test_file.rb"
@@ -39,6 +41,7 @@ class TestFatModelFinder < Minitest::Test
     # Ensure the output file does not exist before running the scan
     File.delete(@output_file) if File.exist?(@output_file)
   end
+  # rubocop:enable Metrics/MethodLength
 
   def teardown
     # Cleanup test files and directories
@@ -119,7 +122,6 @@ class TestFatModelFinder < Minitest::Test
     assert_equal true, file_data.first["fat_model_data"]["validation_count_high"], "Expected validation_count_high"
   end
 
-
   def test_show_fat_models_displays_fat_model_information
     cli = FatModelFinder::CLI.new
     cli.scan(@test_directory)
@@ -153,3 +155,4 @@ class TestFatModelFinder < Minitest::Test
     assert_includes output, "No data found. Run 'scan' first."
   end
 end
+# rubocop:enable Metrics/ClassLength

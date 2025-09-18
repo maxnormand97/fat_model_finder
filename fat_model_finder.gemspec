@@ -9,7 +9,8 @@ Gem::Specification.new do |spec|
   spec.email = ["maxnormand97@gmail.com"]
 
   spec.summary = "Working on a new app? Want to find Fat Models, use ME"
-  spec.description = "A CLI tool that scans the `/app/models` directory in a Rails application to identify 'fat models' based on conditions defined in this gem."
+  spec.description = "A CLI tool that scans the `/app/models` directory in a Rails application to identify 'fat models'
+   based on conditions defined in this gem."
   spec.homepage = "https://github.com/maxnormand97"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.6.0"
@@ -29,12 +30,12 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Runtime dependencies
-  spec.add_dependency "thor"
   spec.add_dependency "colorize"
+  spec.add_dependency "thor"
 
   # Development dependencies
-  spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "minitest", "~> 5.0"
-  spec.add_development_dependency "rubocop", "~> 1.21"
   spec.add_development_dependency "pry"
+  spec.add_development_dependency "rake", "~> 13.0"
+  spec.add_development_dependency "rubocop", "~> 1.21"
 end

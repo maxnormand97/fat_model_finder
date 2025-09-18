@@ -11,8 +11,8 @@ gem "minitest", "~> 5.0"
 
 gem "rubocop", "~> 1.21"
 
-gem 'thor'
+gem "thor"
 
-gem 'colorize'
+gem "colorize"
 
-gem 'pry', require: false
+gem "pry", require: false
