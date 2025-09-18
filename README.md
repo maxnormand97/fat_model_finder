@@ -23,13 +23,13 @@ After installing the gem, you can use the CLI tool to scan your Rails applicatio
 1. To scan the models and save the fat model data into a JSON file named `file_data`:
 
     ```bash
-    $ bin/fat_model_finder scan
+    fat_model_finder scan
     ```
 
 2. To display the fat models based on the saved JSON data:
 
     ```bash
-    $ bin/fat_model_finder show_fat_models
+    fat_model_finder show_fat_models
     ```
 
 The `scan` command analyzes the models in the `/app/models` directory and saves the results in a JSON file. The `show_fat_models` command parses the JSON file and outputs the fat model data to the user.
